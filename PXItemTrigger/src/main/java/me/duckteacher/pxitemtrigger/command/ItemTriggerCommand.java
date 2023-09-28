@@ -1,6 +1,7 @@
 package me.duckteacher.pxitemtrigger.command;
 
 import me.duckteacher.pxitemtrigger.file.DataManager;
+import me.duckteacher.pxitemtrigger.file.variables.Message;
 import me.duckteacher.pxitemtrigger.util.trigger.Trigger;
 import me.duckteacher.pxitemtrigger.util.trigger.TriggerCommand;
 import me.duckteacher.pxitemtrigger.util.trigger.TriggerType;
@@ -19,14 +20,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
-    private static MiniMessage mm = MiniMessage.miniMessage();
-    private static final String PREFIX = "<gold>[IT] <reset>";
+    private static final MiniMessage mm = MiniMessage.miniMessage();
 
     //<editor-fold desc="Placeholders">
     private static final Component mm_cmd = mm.deserialize("<hover:show_text:'<detail_cmd>'>/itemtrigger</hover>",
@@ -138,11 +137,12 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
 
     private void sendHelp(Player player) { sendHelp(player, 1); }
     private void sendHelp(Player player, int page) {
+        String PREFIX = Message.prefix;
         if (page < 1 || page > 2) page = 1;
 
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
         player.sendPlainMessage("");
-        player.sendMessage(mm.deserialize(PREFIX + "명령어 도움말 <st>━━━━━</st>[" + page + "/2]<st>━━━━━</st>"));
+        player.sendMessage(mm.deserialize(PREFIX + " 명령어 도움말 <st>━━━━━</st>[" + page + "/2]<st>━━━━━</st>"));
 
         switch (page) {
             case 2 -> {
@@ -189,12 +189,24 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     ));
         }
     }
-    private void tinkle(Player player) { player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f); }
+    private String typeName(TriggerType type) {
+        return switch (type) {
+            case LEFT -> "왼쪽 클릭";
+            case RIGHT -> "오른쪽 클릭";
+            case SWAP -> "손 바꾸기";
+        };
+    }
+    private void tinkle(Player player) {
+        player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
+    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        String PREFIX = Message.prefix;
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(mm.deserialize("<red>이 명령어는 플레이어만 사용할 수 있습니다."));
+            sender.sendMessage(mm.deserialize("<red><msg_err_only_for_player>",
+                    Placeholder.component("msg_err_only_for_player", mm.deserialize(Message.err_only_for_player))
+            ));
             return true;
         }
 
@@ -205,7 +217,9 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                 try {
                     page = Integer.parseInt(args[1]);
                 } catch (NumberFormatException e) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>페이지는 정수여야 합니다."));
+                    player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_page_is_number>",
+                            Placeholder.component("msg_err_page_is_number", mm.deserialize(Message.err_page_is_number))
+                    ));
                     return true;
                 }
             }
@@ -219,7 +233,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
 
             if (args[1].equalsIgnoreCase("create") || args[1].equals("생성")) {
                 if (args.length != 2) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_create>",
+                    player.sendMessage(mm.deserialize(PREFIX + " <red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_create>",
                             Placeholder.component("mm_cmd", mm_cmd),
                             Placeholder.component("mm_name", mm_name),
                             Placeholder.component("mm_cmd_create", mm_cmd_create))
@@ -228,29 +242,37 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                 }
 
                 if (trigger != null) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>이미 존재하는 아이템 트리거입니다."));
+                    player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_trigger_already_exist>",
+                            Placeholder.component("msg_err_trigger_already_exist", mm.deserialize(Message.err_trigger_already_exist))
+                    ));
                     return true;
                 }
 
                 Pattern pattern = Pattern.compile("[^a-z0-9_]");
                 Matcher matcher = pattern.matcher(triggerName);
                 if (matcher.find()) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>아이템 트리거 이름에 특수문자가 포함될 수 없습니다."));
+                    player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_name_not_contains_special>",
+                            Placeholder.component("msg_err_name_not_contains_special", mm.deserialize(Message.err_name_not_contains_special))
+                    ));
                     return true;
                 }
 
                 Trigger newTrigger = new Trigger(triggerName);
                 Trigger.triggers.add(newTrigger);
 
-                DataManager.save();
+                DataManager.saveAll();
                 tinkle(player);
-                player.sendMessage(mm.deserialize(PREFIX + "새 아이템 트리거 '<yellow>" + triggerName + "</yellow>' (을)를 생성했습니다."));
+
+                String msg = Message.trigger_created.replace("<trigger_name>", triggerName);
+                player.sendMessage(mm.deserialize(PREFIX + " <msg_trigger_created>",
+                        Placeholder.component("msg_trigger_created", mm.deserialize(msg))
+                ));
                 return true;
             }
 
             else if (args[1].equalsIgnoreCase("remove") || args[1].equals("제거")) {
                 if (args.length != 2) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_remove>",
+                    player.sendMessage(mm.deserialize(PREFIX + " <red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_remove>",
                             Placeholder.component("mm_cmd", mm_cmd),
                             Placeholder.component("mm_name", mm_name),
                             Placeholder.component("mm_cmd_remove", mm_cmd_remove))
@@ -259,28 +281,27 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                 }
 
                 if (trigger == null) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>존재하지 않는 아이템 트리거입니다."));
+                    player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_trigger_not_exist>",
+                            Placeholder.component("msg_err_trigger_not_exist", mm.deserialize(Message.err_trigger_not_exist))
+                    ));
                     return true;
                 }
 
-                for (Trigger t : new HashSet<>(Trigger.triggers)) {
-                    if (t.name.equals(triggerName)) {
-                        Trigger.triggers.remove(t);
+                Trigger.triggers.remove(trigger);
 
-                        DataManager.save();
-                        tinkle(player);
-                        player.sendMessage(mm.deserialize(PREFIX + "아이템 트리거 '<yellow>" + triggerName + "</yellow>' (을)를 삭제했습니다."));
-                        return true;
-                    }
-                }
+                DataManager.saveAll();
+                tinkle(player);
 
-                player.sendMessage(mm.deserialize(PREFIX + "<red>존재하지 않는 아이템 트리거입니다."));
+                String msg = Message.trigger_removed.replace("<trigger_name>", triggerName);
+                player.sendMessage(mm.deserialize(PREFIX + " <msg_trigger_removed>",
+                        Placeholder.component("msg_trigger_removed", mm.deserialize(msg))
+                ));
                 return true;
             }
 
             else if (args[1].equalsIgnoreCase("item") || args[1].equals("아이템")) {
                 if (args.length != 2) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_item>",
+                    player.sendMessage(mm.deserialize(PREFIX + " <red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_item>",
                             Placeholder.component("mm_cmd", mm_cmd),
                             Placeholder.component("mm_name", mm_name),
                             Placeholder.component("mm_cmd_item", mm_cmd_item))
@@ -289,7 +310,9 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                 }
 
                 if (trigger == null) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>존재하지 않는 아이템 트리거입니다."));
+                    player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_trigger_not_exist>",
+                            Placeholder.component("msg_err_trigger_not_exist", mm.deserialize(Message.err_trigger_not_exist))
+                    ));
                     return true;
                 }
 
@@ -300,41 +323,55 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                 if (item.getType().isAir()) {   // empty
                     ItemStack nowItem = trigger.item;
                     if (nowItem == null) {
-                        player.sendMessage(mm.deserialize(PREFIX + "<red>해당 아이템 트리거는 아이템이 지정되어 있지 않습니다."));
+                        player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_item_not_set>",
+                                Placeholder.component("msg_err_item_not_set", mm.deserialize(Message.err_item_not_set))
+                        ));
                         return true;
                     }
                     else {
                         if (player.getInventory().firstEmpty() == -1) {
-                            player.sendMessage(mm.deserialize(PREFIX + "<red>인벤토리에 공간이 부족하여 아이템을 가져올 수 없습니다."));
+                            player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_no_empty_space>",
+                                    Placeholder.component("msg_err_no_empty_space", mm.deserialize(Message.err_no_empty_space))
+                            ));
                             return true;
                         }
 
                         player.getInventory().addItem(nowItem.clone());
 
-                        DataManager.save();
+                        DataManager.saveAll();
                         tinkle(player);
-                        player.sendMessage(mm.deserialize(PREFIX + "'<yellow>" + triggerName + "</yellow>' 의 아이템을 가져왔습니다."));
+
+                        String msg = Message.received_item.replace("<trigger_name>", triggerName);
+                        player.sendMessage(mm.deserialize(PREFIX + " <msg_received_item>",
+                                Placeholder.component("msg_received_item", mm.deserialize(msg))
+                        ));
                         return true;
                     }
                 }
                 else {  // not empty
                     if (Trigger.getTrigger(item) != null) {
-                        player.sendMessage(mm.deserialize(PREFIX + "<red>해당 아이템은 이미 다른 아이템 트리거에 배정되어 있습니다."));
+                        player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_item_already_set>",
+                                Placeholder.component("msg_err_item_already_set", mm.deserialize(Message.err_item_already_set))
+                        ));
                         return true;
                     }
 
                     trigger.item = item;
 
-                    DataManager.save();
+                    DataManager.saveAll();
                     tinkle(player);
-                    player.sendMessage(mm.deserialize(PREFIX + "'<yellow>" + triggerName + "</yellow>' 의 아이템을 현재 아이템으로 지정했습니다."));
+
+                    String msg = Message.item_set.replace("<trigger_name>", triggerName);
+                    player.sendMessage(mm.deserialize(PREFIX + " <msg_item_set>",
+                            Placeholder.component("msg_item_set", mm.deserialize(msg))
+                    ));
                     return true;
                 }
             }
 
             else if (args[1].equalsIgnoreCase("command") || args[1].equals("명령어")) {
                 if (args.length < 4) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_command> <mm_type> <mm_force> <mm_command>",
+                    player.sendMessage(mm.deserialize(PREFIX + " <red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_command> <mm_type> <mm_force> <mm_command>",
                             Placeholder.component("mm_cmd", mm_cmd),
                             Placeholder.component("mm_name", mm_name),
                             Placeholder.component("mm_cmd_command", mm_cmd_command),
@@ -346,7 +383,9 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                 }
 
                 if (trigger == null) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>존재하지 않는 아이템 트리거입니다."));
+                    player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_trigger_not_exist>",
+                            Placeholder.component("msg_err_trigger_not_exist", mm.deserialize(Message.err_trigger_not_exist))
+                    ));
                     return true;
                 }
 
@@ -358,13 +397,11 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     String typeName;
                     try {
                         type = TriggerType.valueOf(typeStr);
-                        typeName = switch (type) {
-                            case LEFT -> "왼쪽 클릭";
-                            case RIGHT -> "오른쪽 클릭";
-                            case SWAP -> "손 바꾸기";
-                        };
+                        typeName = typeName(type);
                     } catch (IllegalArgumentException e) {
-                        player.sendMessage(mm.deserialize(PREFIX + "<red>올바르지 않은 타입입니다."));
+                        player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_invalid_type>",
+                                Placeholder.component("msg_err_invalid_type", mm.deserialize(Message.err_invalid_type))
+                        ));
                         return true;
                     }
 
@@ -372,21 +409,32 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     if (forceStr.equalsIgnoreCase("true")) force = true;
                     else if (forceStr.equalsIgnoreCase("false")) force = false;
                     else {
-                        player.sendMessage(mm.deserialize(PREFIX + "<red>강제 여부는 true 혹은 false 여야 합니다."));
+                        player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_force_is_boolean>",
+                                Placeholder.component("msg_err_force_is_boolean", mm.deserialize(Message.err_force_is_boolean))
+                        ));
                         return true;
                     }
 
                     TriggerCommand triggerCommand = trigger.getCommand(type);
                     if (triggerCommand == null) {
-                        player.sendMessage(mm.deserialize(PREFIX + "<red>해당 타입의 명령어가 등록되지 않았습니다."));
+                        player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_command_not_set>",
+                                Placeholder.component("msg_err_command_not_set", mm.deserialize(Message.err_command_not_set))
+                        ));
                         return true;
                     }
 
                     triggerCommand.force = force;
 
-                    DataManager.save();
+                    DataManager.saveAll();
                     tinkle(player);
-                    player.sendMessage(mm.deserialize(PREFIX + "'<yellow>" + triggerName + "</yellow>' 의 " + typeName + " 시 명령어의 강제 여부를 " + force + "로 설정했습니다."));
+
+                    String msg = Message.force_set
+                            .replace("<trigger_name>", triggerName)
+                            .replace("<type_name>", typeName)
+                            .replace("<force>", Boolean.toString(force));
+                    player.sendMessage(mm.deserialize(PREFIX + " <msg_force_set>",
+                            Placeholder.component("msg_force_set", mm.deserialize(msg))
+                    ));
                     return true;
                 }
                 else {
@@ -395,10 +443,14 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     String commandline = String.join(" ", Arrays.copyOfRange(args, 4, args.length));
 
                     TriggerType type;
+                    String typeName;
                     try {
                         type = TriggerType.valueOf(typeStr);
+                        typeName = typeName(type);
                     } catch (IllegalArgumentException e) {
-                        player.sendMessage(mm.deserialize(PREFIX + "<red>올바르지 않은 타입입니다."));
+                        player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_invalid_type>",
+                                Placeholder.component("msg_err_invalid_type", mm.deserialize(Message.err_invalid_type))
+                        ));
                         return true;
                     }
 
@@ -406,23 +458,31 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     if (forceStr.equalsIgnoreCase("true")) force = true;
                     else if (forceStr.equalsIgnoreCase("false")) force = false;
                     else {
-                        player.sendMessage(mm.deserialize(PREFIX + "<red>강제 여부는 true 혹은 false 여야 합니다."));
+                        player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_force_is_boolean>",
+                                Placeholder.component("msg_err_force_is_boolean", mm.deserialize(Message.err_force_is_boolean))
+                        ));
                         return true;
                     }
 
                     TriggerCommand triggerCommand = new TriggerCommand(commandline, force);
                     trigger.setCommand(type, triggerCommand);
 
-                    DataManager.save();
+                    DataManager.saveAll();
                     tinkle(player);
-                    player.sendMessage(mm.deserialize(PREFIX + "'<yellow>" + triggerName + "</yellow>' 의 명령어를 설정했습니다."));
+
+                    String msg = Message.command_set
+                            .replace("<trigger_name>", triggerName)
+                            .replace("<type_name>", typeName);
+                    player.sendMessage(mm.deserialize(PREFIX + " <msg_command_set>",
+                            Placeholder.component("msg_command_set", mm.deserialize(msg))
+                    ));
                     return true;
                 }
             }
 
             else if (args[1].equalsIgnoreCase("delcmd") || args[1].equals("명령어제거")) {
                 if (args.length != 3) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_delcmd> <mm_type>",
+                    player.sendMessage(mm.deserialize(PREFIX + " <red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_delcmd> <mm_type>",
                             Placeholder.component("mm_cmd", mm_cmd),
                             Placeholder.component("mm_name", mm_name),
                             Placeholder.component("mm_cmd_delcmd", mm_cmd_delcmd),
@@ -432,7 +492,9 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                 }
 
                 if (trigger == null) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>존재하지 않는 아이템 트리거입니다."));
+                    player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_trigger_not_exist>",
+                            Placeholder.component("msg_err_trigger_not_exist", mm.deserialize(Message.err_trigger_not_exist))
+                    ));
                     return true;
                 }
 
@@ -441,32 +503,38 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                 String typeName;
                 try {
                     type = TriggerType.valueOf(typeStr);
-                    typeName = switch (type) {
-                        case LEFT -> "왼쪽 클릭";
-                        case RIGHT -> "오른쪽 클릭";
-                        case SWAP -> "손 바꾸기";
-                    };
+                    typeName = typeName(type);
                 } catch (IllegalArgumentException e) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>올바르지 않은 타입입니다."));
+                    player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_invalid_type>",
+                            Placeholder.component("msg_err_invalid_type", mm.deserialize(Message.err_invalid_type))
+                    ));
                     return true;
                 }
 
                 if (trigger.getCommand(type) == null) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>해당 타입의 명령어가 등록되지 않았습니다."));
+                    player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_command_not_set>",
+                            Placeholder.component("msg_err_command_not_set", mm.deserialize(Message.err_command_not_set))
+                    ));
                     return true;
                 }
 
                 trigger.setCommand(type, null);
 
-                DataManager.save();
+                DataManager.saveAll();
                 tinkle(player);
-                player.sendMessage(mm.deserialize(PREFIX + "'<yellow>" + triggerName + "</yellow>' 의 " + typeName + " 시 명령어를 제거했습니다."));
+
+                String msg = Message.command_removed
+                        .replace("<trigger_name>", triggerName)
+                        .replace("<type_name>", typeName);
+                player.sendMessage(mm.deserialize(PREFIX + " <msg_command_removed>",
+                        Placeholder.component("msg_command_removed", mm.deserialize(msg))
+                ));
                 return true;
             }
 
             else if (args[1].equalsIgnoreCase("rename") || args[1].equals("이름")) {
                 if (args.length != 3) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_rename> [새 이름]",
+                    player.sendMessage(mm.deserialize(PREFIX + " <red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_rename> [새 이름]",
                             Placeholder.component("mm_cmd", mm_cmd),
                             Placeholder.component("mm_name", mm_name),
                             Placeholder.component("mm_cmd_rename", mm_cmd_rename))
@@ -475,28 +543,39 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                 }
 
                 if (trigger == null) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>존재하지 않는 아이템 트리거입니다."));
+                    player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_trigger_not_exist>",
+                            Placeholder.component("msg_err_trigger_not_exist", mm.deserialize(Message.err_trigger_not_exist))));
                     return true;
                 }
 
                 String newName = args[2].toLowerCase();
                 if (Trigger.getTriggerByName(newName) != null) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>이미 존재하는 아이템 트리거입니다."));
+                    player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_name_already_registered>",
+                            Placeholder.component("msg_err_name_already_registered", mm.deserialize(Message.err_name_already_registered))
+                    ));
                     return true;
                 }
 
-                Pattern pattern = Pattern.compile("[^a-z0-9 ]");
-                Matcher matcher = pattern.matcher(triggerName);
+                Pattern pattern = Pattern.compile("[^a-z0-9_]");
+                Matcher matcher = pattern.matcher(newName);
                 if (matcher.find()) {
-                    player.sendMessage(mm.deserialize(PREFIX + "<red>아이템 트리거 이름에 특수문자가 포함될 수 없습니다."));
+                    player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_name_not_contains_special>",
+                            Placeholder.component("msg_err_name_not_contains_special", mm.deserialize(Message.err_name_not_contains_special))
+                    ));
                     return true;
                 }
 
                 trigger.name = newName;
 
-                DataManager.save();
+                DataManager.saveAll();
                 tinkle(player);
-                player.sendMessage(mm.deserialize(PREFIX + "'<yellow>" + triggerName + "</yellow>' 의 이름을 '<yellow>" + newName + "</yellow>' 로 변경했습니다."));
+
+                String msg = Message.name_changed
+                        .replace("<trigger_name>", triggerName)
+                        .replace("<new_name>", newName);
+                player.sendMessage(mm.deserialize(PREFIX + " <msg_name_changed>",
+                        Placeholder.component("msg_name_changed", mm.deserialize(msg))
+                ));
                 return true;
             }
 

@@ -1,7 +1,10 @@
 package me.duckteacher.pxitemtrigger.command;
 
 import me.duckteacher.pxitemtrigger.file.DataManager;
+import me.duckteacher.pxitemtrigger.file.variables.Message;
+import me.duckteacher.pxitemtrigger.util.trigger.Trigger;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,8 +22,10 @@ public class ItreloadCommand implements TabCompleter, CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        DataManager.load();
-        sender.sendMessage(MiniMessage.miniMessage().deserialize("아이템 트리거 설정이 모두 새로고침 되었습니다."));
+        DataManager.setup();
+        sender.sendMessage(MiniMessage.miniMessage().deserialize(Message.prefix + " <msg_config_reloaded>",
+                Placeholder.component("msg_config_reloaded", MiniMessage.miniMessage().deserialize(Message.config_reloaded))
+        ));
 
         return true;
     }

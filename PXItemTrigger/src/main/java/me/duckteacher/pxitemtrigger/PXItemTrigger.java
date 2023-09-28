@@ -8,6 +8,7 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Objects;
 import java.util.logging.Logger;
 
 public final class PXItemTrigger extends JavaPlugin {
@@ -19,28 +20,29 @@ public final class PXItemTrigger extends JavaPlugin {
         instance = this;
         logger = getLogger();
 
-        PluginManager pm = getServer().getPluginManager();
-        pm.registerEvents(new TriggerListener(), this);
+        /* ---------- CONFIG ---------- */
+        saveResource("messages.yml", false);
+        DataManager.setup();
 
+        /* ---------- COMMAND ---------- */
         //<editor-fold desc="Commands">
-        PluginCommand var = getCommand("itemtrigger");
-        if (var != null) {
-            var.setTabCompleter(new ItemTriggerCommand());
-            var.setExecutor(new ItemTriggerCommand());
-        }
-        var = getCommand("itreload");
-        if (var != null) {
-            var.setTabCompleter(new ItreloadCommand());
-            var.setExecutor(new ItreloadCommand());
-        }
+        PluginCommand itemTriggerCmd = getCommand("itemtrigger");
+        Objects.requireNonNull(itemTriggerCmd).setExecutor(new ItemTriggerCommand());
+        itemTriggerCmd.setTabCompleter(new ItemTriggerCommand());
+
+        PluginCommand itreloadCmd = getCommand("itreload");
+        Objects.requireNonNull(itreloadCmd).setExecutor(new ItreloadCommand());
+        itreloadCmd.setTabCompleter(new ItreloadCommand());
         //</editor-fold>
 
-        DataManager.load();
+        /* ---------- LISTENER ---------- */
+        PluginManager pm = getServer().getPluginManager();
+        pm.registerEvents(new TriggerListener(), this);
     }
 
     @Override
     public void onDisable() {
-        DataManager.save();
+        DataManager.saveAll();
     }
 
     public static PXItemTrigger getInstance() {
