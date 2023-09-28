@@ -1,0 +1,19 @@
+name: PXItemTrigger
+version: '1.01'
+description: 아이템에 명령어를 지정하여 특정 행위로 지정된 명령어를 실행하는 플러그인
+author: DuckTeacher
+main: me.duckteacher.pxitemtrigger.PXItemTrigger
+api-version: '1.20'
+commands:
+  itemtrigger:
+    aliases: [it, 아이템트리거, 아트]
+    description: Item Trigger Management Command
+    usage: /itemtrigger
+    permission: itemtrigger.*
+  itreload:
+    aliases: [itr]
+    description: Item Trigger Config Reload Command
+    usage: /itreload
+    permission: itemtrigger.*
+permissions:
+  itemtrigger.*: {default: op}
