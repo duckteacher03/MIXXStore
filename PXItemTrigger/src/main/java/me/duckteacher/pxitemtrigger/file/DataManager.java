@@ -38,7 +38,7 @@ public class DataManager {
 
 
         Trigger.setup();
-        Message.setup();
+        Message.instance = new Message(dataFile_messages);
     }
 
     public static void saveAll() {

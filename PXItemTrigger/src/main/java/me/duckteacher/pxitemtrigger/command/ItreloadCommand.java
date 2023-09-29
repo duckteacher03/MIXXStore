@@ -2,7 +2,6 @@ package me.duckteacher.pxitemtrigger.command;
 
 import me.duckteacher.pxitemtrigger.file.DataManager;
 import me.duckteacher.pxitemtrigger.file.variables.Message;
-import me.duckteacher.pxitemtrigger.util.trigger.Trigger;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.command.Command;
@@ -23,8 +22,10 @@ public class ItreloadCommand implements TabCompleter, CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         DataManager.setup();
-        sender.sendMessage(MiniMessage.miniMessage().deserialize(Message.prefix + " <msg_config_reloaded>",
-                Placeholder.component("msg_config_reloaded", MiniMessage.miniMessage().deserialize(Message.config_reloaded))
+        Message msgData = Message.getInstance();
+
+        sender.sendMessage(MiniMessage.miniMessage().deserialize(msgData.prefix + " <msg_config_reloaded>",
+                Placeholder.component("msg_config_reloaded", MiniMessage.miniMessage().deserialize(msgData.config_reloaded))
         ));
 
         return true;

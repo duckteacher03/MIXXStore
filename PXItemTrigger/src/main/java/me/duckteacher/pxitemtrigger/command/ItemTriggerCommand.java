@@ -137,7 +137,8 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
 
     private void sendHelp(Player player) { sendHelp(player, 1); }
     private void sendHelp(Player player, int page) {
-        String PREFIX = Message.prefix;
+        Message msgData = Message.getInstance();
+        String PREFIX = msgData.prefix;
         if (page < 1 || page > 2) page = 1;
 
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
@@ -202,10 +203,12 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        String PREFIX = Message.prefix;
+        Message msgData = Message.getInstance();
+        String PREFIX = msgData.prefix;
+
         if (!(sender instanceof Player player)) {
             sender.sendMessage(mm.deserialize("<red><msg_err_only_for_player>",
-                    Placeholder.component("msg_err_only_for_player", mm.deserialize(Message.err_only_for_player))
+                    Placeholder.component("msg_err_only_for_player", mm.deserialize(msgData.err_only_for_player))
             ));
             return true;
         }
@@ -218,7 +221,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     page = Integer.parseInt(args[1]);
                 } catch (NumberFormatException e) {
                     player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_page_is_number>",
-                            Placeholder.component("msg_err_page_is_number", mm.deserialize(Message.err_page_is_number))
+                            Placeholder.component("msg_err_page_is_number", mm.deserialize(msgData.err_page_is_number))
                     ));
                     return true;
                 }
@@ -243,7 +246,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
 
                 if (trigger != null) {
                     player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_trigger_already_exist>",
-                            Placeholder.component("msg_err_trigger_already_exist", mm.deserialize(Message.err_trigger_already_exist))
+                            Placeholder.component("msg_err_trigger_already_exist", mm.deserialize(msgData.err_trigger_already_exist))
                     ));
                     return true;
                 }
@@ -252,7 +255,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                 Matcher matcher = pattern.matcher(triggerName);
                 if (matcher.find()) {
                     player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_name_not_contains_special>",
-                            Placeholder.component("msg_err_name_not_contains_special", mm.deserialize(Message.err_name_not_contains_special))
+                            Placeholder.component("msg_err_name_not_contains_special", mm.deserialize(msgData.err_name_not_contains_special))
                     ));
                     return true;
                 }
@@ -263,7 +266,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                 DataManager.saveAll();
                 tinkle(player);
 
-                String msg = Message.trigger_created.replace("<trigger_name>", triggerName);
+                String msg = msgData.trigger_created.replace("<trigger_name>", triggerName);
                 player.sendMessage(mm.deserialize(PREFIX + " <msg_trigger_created>",
                         Placeholder.component("msg_trigger_created", mm.deserialize(msg))
                 ));
@@ -282,7 +285,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
 
                 if (trigger == null) {
                     player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_trigger_not_exist>",
-                            Placeholder.component("msg_err_trigger_not_exist", mm.deserialize(Message.err_trigger_not_exist))
+                            Placeholder.component("msg_err_trigger_not_exist", mm.deserialize(msgData.err_trigger_not_exist))
                     ));
                     return true;
                 }
@@ -292,7 +295,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                 DataManager.saveAll();
                 tinkle(player);
 
-                String msg = Message.trigger_removed.replace("<trigger_name>", triggerName);
+                String msg = msgData.trigger_removed.replace("<trigger_name>", triggerName);
                 player.sendMessage(mm.deserialize(PREFIX + " <msg_trigger_removed>",
                         Placeholder.component("msg_trigger_removed", mm.deserialize(msg))
                 ));
@@ -311,7 +314,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
 
                 if (trigger == null) {
                     player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_trigger_not_exist>",
-                            Placeholder.component("msg_err_trigger_not_exist", mm.deserialize(Message.err_trigger_not_exist))
+                            Placeholder.component("msg_err_trigger_not_exist", mm.deserialize(msgData.err_trigger_not_exist))
                     ));
                     return true;
                 }
@@ -324,14 +327,14 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     ItemStack nowItem = trigger.item;
                     if (nowItem == null) {
                         player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_item_not_set>",
-                                Placeholder.component("msg_err_item_not_set", mm.deserialize(Message.err_item_not_set))
+                                Placeholder.component("msg_err_item_not_set", mm.deserialize(msgData.err_item_not_set))
                         ));
                         return true;
                     }
                     else {
                         if (player.getInventory().firstEmpty() == -1) {
                             player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_no_empty_space>",
-                                    Placeholder.component("msg_err_no_empty_space", mm.deserialize(Message.err_no_empty_space))
+                                    Placeholder.component("msg_err_no_empty_space", mm.deserialize(msgData.err_no_empty_space))
                             ));
                             return true;
                         }
@@ -341,7 +344,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                         DataManager.saveAll();
                         tinkle(player);
 
-                        String msg = Message.received_item.replace("<trigger_name>", triggerName);
+                        String msg = msgData.received_item.replace("<trigger_name>", triggerName);
                         player.sendMessage(mm.deserialize(PREFIX + " <msg_received_item>",
                                 Placeholder.component("msg_received_item", mm.deserialize(msg))
                         ));
@@ -351,7 +354,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                 else {  // not empty
                     if (Trigger.getTrigger(item) != null) {
                         player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_item_already_set>",
-                                Placeholder.component("msg_err_item_already_set", mm.deserialize(Message.err_item_already_set))
+                                Placeholder.component("msg_err_item_already_set", mm.deserialize(msgData.err_item_already_set))
                         ));
                         return true;
                     }
@@ -361,7 +364,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     DataManager.saveAll();
                     tinkle(player);
 
-                    String msg = Message.item_set.replace("<trigger_name>", triggerName);
+                    String msg = msgData.item_set.replace("<trigger_name>", triggerName);
                     player.sendMessage(mm.deserialize(PREFIX + " <msg_item_set>",
                             Placeholder.component("msg_item_set", mm.deserialize(msg))
                     ));
@@ -384,7 +387,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
 
                 if (trigger == null) {
                     player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_trigger_not_exist>",
-                            Placeholder.component("msg_err_trigger_not_exist", mm.deserialize(Message.err_trigger_not_exist))
+                            Placeholder.component("msg_err_trigger_not_exist", mm.deserialize(msgData.err_trigger_not_exist))
                     ));
                     return true;
                 }
@@ -400,7 +403,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                         typeName = typeName(type);
                     } catch (IllegalArgumentException e) {
                         player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_invalid_type>",
-                                Placeholder.component("msg_err_invalid_type", mm.deserialize(Message.err_invalid_type))
+                                Placeholder.component("msg_err_invalid_type", mm.deserialize(msgData.err_invalid_type))
                         ));
                         return true;
                     }
@@ -410,7 +413,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     else if (forceStr.equalsIgnoreCase("false")) force = false;
                     else {
                         player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_force_is_boolean>",
-                                Placeholder.component("msg_err_force_is_boolean", mm.deserialize(Message.err_force_is_boolean))
+                                Placeholder.component("msg_err_force_is_boolean", mm.deserialize(msgData.err_force_is_boolean))
                         ));
                         return true;
                     }
@@ -418,7 +421,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     TriggerCommand triggerCommand = trigger.getCommand(type);
                     if (triggerCommand == null) {
                         player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_command_not_set>",
-                                Placeholder.component("msg_err_command_not_set", mm.deserialize(Message.err_command_not_set))
+                                Placeholder.component("msg_err_command_not_set", mm.deserialize(msgData.err_command_not_set))
                         ));
                         return true;
                     }
@@ -428,7 +431,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     DataManager.saveAll();
                     tinkle(player);
 
-                    String msg = Message.force_set
+                    String msg = msgData.force_set
                             .replace("<trigger_name>", triggerName)
                             .replace("<type_name>", typeName)
                             .replace("<force>", Boolean.toString(force));
@@ -449,7 +452,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                         typeName = typeName(type);
                     } catch (IllegalArgumentException e) {
                         player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_invalid_type>",
-                                Placeholder.component("msg_err_invalid_type", mm.deserialize(Message.err_invalid_type))
+                                Placeholder.component("msg_err_invalid_type", mm.deserialize(msgData.err_invalid_type))
                         ));
                         return true;
                     }
@@ -459,7 +462,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     else if (forceStr.equalsIgnoreCase("false")) force = false;
                     else {
                         player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_force_is_boolean>",
-                                Placeholder.component("msg_err_force_is_boolean", mm.deserialize(Message.err_force_is_boolean))
+                                Placeholder.component("msg_err_force_is_boolean", mm.deserialize(msgData.err_force_is_boolean))
                         ));
                         return true;
                     }
@@ -470,7 +473,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     DataManager.saveAll();
                     tinkle(player);
 
-                    String msg = Message.command_set
+                    String msg = msgData.command_set
                             .replace("<trigger_name>", triggerName)
                             .replace("<type_name>", typeName);
                     player.sendMessage(mm.deserialize(PREFIX + " <msg_command_set>",
@@ -493,7 +496,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
 
                 if (trigger == null) {
                     player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_trigger_not_exist>",
-                            Placeholder.component("msg_err_trigger_not_exist", mm.deserialize(Message.err_trigger_not_exist))
+                            Placeholder.component("msg_err_trigger_not_exist", mm.deserialize(msgData.err_trigger_not_exist))
                     ));
                     return true;
                 }
@@ -506,14 +509,14 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     typeName = typeName(type);
                 } catch (IllegalArgumentException e) {
                     player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_invalid_type>",
-                            Placeholder.component("msg_err_invalid_type", mm.deserialize(Message.err_invalid_type))
+                            Placeholder.component("msg_err_invalid_type", mm.deserialize(msgData.err_invalid_type))
                     ));
                     return true;
                 }
 
                 if (trigger.getCommand(type) == null) {
                     player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_command_not_set>",
-                            Placeholder.component("msg_err_command_not_set", mm.deserialize(Message.err_command_not_set))
+                            Placeholder.component("msg_err_command_not_set", mm.deserialize(msgData.err_command_not_set))
                     ));
                     return true;
                 }
@@ -523,7 +526,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                 DataManager.saveAll();
                 tinkle(player);
 
-                String msg = Message.command_removed
+                String msg = msgData.command_removed
                         .replace("<trigger_name>", triggerName)
                         .replace("<type_name>", typeName);
                 player.sendMessage(mm.deserialize(PREFIX + " <msg_command_removed>",
@@ -544,14 +547,14 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
 
                 if (trigger == null) {
                     player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_trigger_not_exist>",
-                            Placeholder.component("msg_err_trigger_not_exist", mm.deserialize(Message.err_trigger_not_exist))));
+                            Placeholder.component("msg_err_trigger_not_exist", mm.deserialize(msgData.err_trigger_not_exist))));
                     return true;
                 }
 
                 String newName = args[2].toLowerCase();
                 if (Trigger.getTriggerByName(newName) != null) {
                     player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_name_already_registered>",
-                            Placeholder.component("msg_err_name_already_registered", mm.deserialize(Message.err_name_already_registered))
+                            Placeholder.component("msg_err_name_already_registered", mm.deserialize(msgData.err_name_already_registered))
                     ));
                     return true;
                 }
@@ -560,7 +563,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                 Matcher matcher = pattern.matcher(newName);
                 if (matcher.find()) {
                     player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_name_not_contains_special>",
-                            Placeholder.component("msg_err_name_not_contains_special", mm.deserialize(Message.err_name_not_contains_special))
+                            Placeholder.component("msg_err_name_not_contains_special", mm.deserialize(msgData.err_name_not_contains_special))
                     ));
                     return true;
                 }
@@ -570,7 +573,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                 DataManager.saveAll();
                 tinkle(player);
 
-                String msg = Message.name_changed
+                String msg = msgData.name_changed
                         .replace("<trigger_name>", triggerName)
                         .replace("<new_name>", newName);
                 player.sendMessage(mm.deserialize(PREFIX + " <msg_name_changed>",
