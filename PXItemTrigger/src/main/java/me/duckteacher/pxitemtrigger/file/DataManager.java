@@ -1,7 +1,7 @@
 package me.duckteacher.pxitemtrigger.file;
 
 import me.duckteacher.pxitemtrigger.PXItemTrigger;
-import me.duckteacher.pxitemtrigger.file.variables.Message;
+import me.duckteacher.pxitemtrigger.file.variables.message.Message;
 import me.duckteacher.pxitemtrigger.util.trigger.Trigger;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
