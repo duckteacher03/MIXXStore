@@ -22,11 +22,21 @@ public class ItreloadCommand implements TabCompleter, CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        DataManager.setup();
         Message msgData = Message.getInstance();
+        MiniMessage mm = MiniMessage.miniMessage();
 
-        sender.sendMessage(MiniMessage.miniMessage().deserialize(msgData.getMessage(MessageKey.PREFIX) + " <msg_config_reloaded>",
-                Placeholder.component("msg_config_reloaded", MiniMessage.miniMessage().deserialize(msgData.getMessage(MessageKey.CONFIG_RELOADED)))
+        if (!sender.hasPermission("itemtrigger.command.reload")) {
+            sender.sendMessage(mm.deserialize(msgData.getMessage(MessageKey.PREFIX) + " <red><msg_no_permission>",
+                    Placeholder.component("msg_no_permission", mm.deserialize(msgData.getMessage(MessageKey.NO_PERMISSION)))
+            ));
+            return true;
+        }
+
+        DataManager.setup();
+        msgData = Message.getInstance();
+
+        sender.sendMessage(mm.deserialize(msgData.getMessage(MessageKey.PREFIX) + " <msg_config_reloaded>",
+                Placeholder.component("msg_config_reloaded", mm.deserialize(msgData.getMessage(MessageKey.CONFIG_RELOADED)))
         ));
 
         return true;

@@ -3,6 +3,7 @@ package me.duckteacher.pxitemtrigger.file.variables.message;
 public enum MessageKey {
     PREFIX("normal.prefix"),
     CONFIG_RELOADED("normal.config_reloaded"),
+    NO_PERMISSION("normal.no_permission"),
 
     TRIGGER_INFO("main.trigger_info"),
     TRIGGER_CREATED("main.trigger_created"),

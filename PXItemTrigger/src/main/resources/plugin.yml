@@ -9,11 +9,20 @@ commands:
     aliases: [it, 아이템트리거, 아트]
     description: Item Trigger Management Command
     usage: /itemtrigger
-    permission: itemtrigger.*
   itreload:
     aliases: [itr]
     description: Item Trigger Config Reload Command
     usage: /itreload
-    permission: itemtrigger.*
 permissions:
-  itemtrigger.*: {default: op}
+  itemtrigger.reload: {default: op}
+  itemtrigger.command:
+    default: op
+    children:
+      itemtrigger.command.help: true
+      itemtrigger.command.info: true
+      itemtrigger.command.create: true
+      itemtrigger.command.remove: true
+      itemtrigger.command.item: true
+      itemtrigger.command.command: true
+      itemtrigger.command.delcmd: true
+      itemtrigger.command.rename: true

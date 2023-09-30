@@ -3,6 +3,7 @@ package me.duckteacher.pxitemtrigger.file.variables.message;
 import me.duckteacher.pxitemtrigger.PXItemTrigger;
 import me.duckteacher.pxitemtrigger.file.DataManager;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.HashMap;
 
@@ -18,7 +19,8 @@ public class Message {
             String msg = fileConfiguration.getString(key.getKey());
             if (msg == null) {
                 PXItemTrigger.getInstance().saveResource("messages.yml", true);
-                DataManager.setup();
+                DataManager.dataFile_messages = YamlConfiguration.loadConfiguration(DataManager.file_messages);
+                Message.instance = new Message(DataManager.dataFile_messages);
                 break;
             }
 

@@ -17,6 +17,8 @@ normal:
   prefix: "<gold>[IT]</gold>"
   # 아이템 트리거 설정 리로드 시
   config_reloaded: "아이템 트리거 설정이 모두 새로고침 되었습니다."
+  # 아이템 트리거 설정 리로드 시
+  no_permission: "<red>해당 명령어를 사용할 권한이 없습니다."
 main:
   trigger_info: "아이템 트리거 '<yellow><trigger_name></yellow>' 의 정보 ┐"
   # 아이템 트리거 생성 시

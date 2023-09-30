@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -92,19 +93,41 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
         ArrayList<String> comps = new ArrayList<>();
 
         if (args.length == 1) {
-            comps.add("?");
-            for (Trigger trigger : Trigger.triggers)
-                comps.add(trigger.name);
+            if (sender.hasPermission("itemtrigger.command.help"))
+                comps.add("?");
+
+            boolean hasPerm = (sender.hasPermission("itemtrigger.command.remove")
+                    || sender.hasPermission("itemtrigger.command.item")
+                    || sender.hasPermission("itemtrigger.command.command")
+                    || sender.hasPermission("itemtrigger.command.delcmd")
+                    || sender.hasPermission("itemtrigger.command.rename"));
+            if (hasPerm)
+                for (Trigger trigger : Trigger.triggers)
+                    comps.add(trigger.name);
         }
         else if (args.length == 2) {
-            if (args[0].equalsIgnoreCase("?"))
-                comps.addAll(List.of("1", "2"));
+            if (args[0].equalsIgnoreCase("?")) {
+                if (sender.hasPermission("itemtrigger.command.help"))
+                    comps.addAll(List.of("1", "2"));
+            }
             else {
                 String triggerName = args[0];
-                if (Trigger.getTriggerByName(triggerName) == null)
-                    comps.addAll(List.of("create", "생성"));
-                else
-                    comps.addAll(List.of("remove", "item", "command", "delcmd", "rename", "제거", "아이템", "명령어", "명령어제거", "이름"));
+                if (Trigger.getTriggerByName(triggerName) == null) {
+                    if (sender.hasPermission("itemtrigger.command.create"))
+                        comps.addAll(List.of("create", "생성"));
+                }
+                else {
+                    if (sender.hasPermission("itemtrigger.command.remove"))
+                        comps.addAll(List.of("remove", "제거"));
+                    if (sender.hasPermission("itemtrigger.command.item"))
+                        comps.addAll(List.of("item", "아이템"));
+                    if (sender.hasPermission("itemtrigger.command.command"))
+                        comps.addAll(List.of("command", "명령어"));
+                    if (sender.hasPermission("itemtrigger.command.delcmd"))
+                        comps.addAll(List.of("delcmd", "명령어제거"));
+                    if (sender.hasPermission("itemtrigger.command.rename"))
+                        comps.addAll(List.of("rename", "이름"));
+                }
             }
         }
         else {
@@ -112,6 +135,9 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
             Trigger trigger = Trigger.getTriggerByName(triggerName);
             if (trigger != null) {
                 if (args[1].equalsIgnoreCase("command") || args[1].equals("명령어")) {
+                    if (!sender.hasPermission("itemtrigger.command.command"))
+                        return Collections.emptyList();
+
                     if (args.length == 3) {
                         for (TriggerType type : TriggerType.values())
                             comps.add(type.name().toLowerCase());
@@ -122,12 +148,18 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                         return List.of("<명령어>");
                 }
                 else if (args[1].equalsIgnoreCase("delcmd") || args[1].equals("명령어제거")) {
+                    if (!sender.hasPermission("itemtrigger.command.delcmd"))
+                        return Collections.emptyList();
+
                     if (args.length == 3) {
                         for (TriggerType type : TriggerType.values())
                             comps.add(type.name().toLowerCase());
                     }
                 }
                 else if (args[1].equalsIgnoreCase("rename") || args[1].equals("이름")) {
+                    if (!sender.hasPermission("itemtrigger.command.rename"))
+                        return Collections.emptyList();
+
                     if (args.length == 3)
                         return List.of("<새 이름>");
                 }
@@ -216,6 +248,13 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
         }
 
         if (args.length < 1 || args[0].equals("?")) {
+            if (!sender.hasPermission("itemtrigger.command.help")) {
+                player.sendMessage(mm.deserialize(PREFIX + " <red><msg_no_permission>",
+                        Placeholder.component("msg_no_permission", mm.deserialize(msgData.getMessage(MessageKey.NO_PERMISSION)))
+                ));
+                return true;
+            }
+
             int page = 1;
 
             if (args.length == 2) {
@@ -237,6 +276,13 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
             Trigger trigger = Trigger.getTriggerByName(triggerName);
 
             if (args.length == 1) {
+                if (!sender.hasPermission("itemtrigger.command.info")) {
+                    player.sendMessage(mm.deserialize(PREFIX + " <red><msg_no_permission>",
+                            Placeholder.component("msg_no_permission", mm.deserialize(msgData.getMessage(MessageKey.NO_PERMISSION)))
+                    ));
+                    return true;
+                }
+
                 if (trigger == null) {
                     player.sendMessage(mm.deserialize(PREFIX + " <red><msg_err_trigger_not_exist>",
                             Placeholder.component("msg_err_trigger_not_exist", mm.deserialize(msgData.getMessage(MessageKey.ERR_TRIGGER_NOT_EXIST)))
@@ -296,8 +342,14 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
             }
 
             else {
-
                 if (args[1].equalsIgnoreCase("create") || args[1].equals("생성")) {
+                    if (!sender.hasPermission("itemtrigger.command.create")) {
+                        player.sendMessage(mm.deserialize(PREFIX + " <red><msg_no_permission>",
+                                Placeholder.component("msg_no_permission", mm.deserialize(msgData.getMessage(MessageKey.NO_PERMISSION)))
+                        ));
+                        return true;
+                    }
+
                     if (args.length != 2) {
                         player.sendMessage(mm.deserialize(PREFIX + " <red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_create>",
                                 Placeholder.component("mm_cmd", mm_cmd),
@@ -335,6 +387,13 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     ));
                     return true;
                 } else if (args[1].equalsIgnoreCase("remove") || args[1].equals("제거")) {
+                    if (!sender.hasPermission("itemtrigger.command.remove")) {
+                        player.sendMessage(mm.deserialize(PREFIX + " <red><msg_no_permission>",
+                                Placeholder.component("msg_no_permission", mm.deserialize(msgData.getMessage(MessageKey.NO_PERMISSION)))
+                        ));
+                        return true;
+                    }
+
                     if (args.length != 2) {
                         player.sendMessage(mm.deserialize(PREFIX + " <red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_remove>",
                                 Placeholder.component("mm_cmd", mm_cmd),
@@ -362,6 +421,13 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     ));
                     return true;
                 } else if (args[1].equalsIgnoreCase("item") || args[1].equals("아이템")) {
+                    if (!sender.hasPermission("itemtrigger.command.item")) {
+                        player.sendMessage(mm.deserialize(PREFIX + " <red><msg_no_permission>",
+                                Placeholder.component("msg_no_permission", mm.deserialize(msgData.getMessage(MessageKey.NO_PERMISSION)))
+                        ));
+                        return true;
+                    }
+
                     if (args.length != 2) {
                         player.sendMessage(mm.deserialize(PREFIX + " <red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_item>",
                                 Placeholder.component("mm_cmd", mm_cmd),
@@ -428,6 +494,13 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                         return true;
                     }
                 } else if (args[1].equalsIgnoreCase("command") || args[1].equals("명령어")) {
+                    if (!sender.hasPermission("itemtrigger.command.command")) {
+                        player.sendMessage(mm.deserialize(PREFIX + " <red><msg_no_permission>",
+                                Placeholder.component("msg_no_permission", mm.deserialize(msgData.getMessage(MessageKey.NO_PERMISSION)))
+                        ));
+                        return true;
+                    }
+
                     if (args.length < 4) {
                         player.sendMessage(mm.deserialize(PREFIX + " <red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_command> <mm_type> <mm_force> <mm_command>",
                                 Placeholder.component("mm_cmd", mm_cmd),
@@ -536,6 +609,13 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                         return true;
                     }
                 } else if (args[1].equalsIgnoreCase("delcmd") || args[1].equals("명령어제거")) {
+                    if (!sender.hasPermission("itemtrigger.command.delcmd")) {
+                        player.sendMessage(mm.deserialize(PREFIX + " <red><msg_no_permission>",
+                                Placeholder.component("msg_no_permission", mm.deserialize(msgData.getMessage(MessageKey.NO_PERMISSION)))
+                        ));
+                        return true;
+                    }
+
                     if (args.length != 3) {
                         player.sendMessage(mm.deserialize(PREFIX + " <red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_delcmd> <mm_type>",
                                 Placeholder.component("mm_cmd", mm_cmd),
@@ -586,6 +666,13 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     ));
                     return true;
                 } else if (args[1].equalsIgnoreCase("rename") || args[1].equals("이름")) {
+                    if (!sender.hasPermission("itemtrigger.command.remove")) {
+                        player.sendMessage(mm.deserialize(PREFIX + " <red><msg_no_permission>",
+                                Placeholder.component("msg_no_permission", mm.deserialize(msgData.getMessage(MessageKey.NO_PERMISSION)))
+                        ));
+                        return true;
+                    }
+
                     if (args.length != 3) {
                         player.sendMessage(mm.deserialize(PREFIX + " <red>올바른 사용법: <mm_cmd> <mm_name> <mm_cmd_rename> [새 이름]",
                                 Placeholder.component("mm_cmd", mm_cmd),
@@ -631,6 +718,13 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                     ));
                     return true;
                 } else {
+                    if (!sender.hasPermission("itemtrigger.command.help")) {
+                        player.sendMessage(mm.deserialize(PREFIX + " <red><msg_no_permission>",
+                                Placeholder.component("msg_no_permission", mm.deserialize(msgData.getMessage(MessageKey.NO_PERMISSION)))
+                        ));
+                        return true;
+                    }
+
                     sendHelp(player);
                     return true;
                 }
