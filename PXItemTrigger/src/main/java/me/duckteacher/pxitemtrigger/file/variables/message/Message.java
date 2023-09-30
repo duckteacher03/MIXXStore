@@ -1,5 +1,6 @@
 package me.duckteacher.pxitemtrigger.file.variables.message;
 
+import me.duckteacher.pxitemtrigger.PXItemTrigger;
 import me.duckteacher.pxitemtrigger.file.DataManager;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -11,12 +12,17 @@ public class Message {
     public HashMap<MessageKey, String> messageMap;
 
     public Message(FileConfiguration fileConfiguration) {
-        FileConfiguration configuration = DataManager.dataFile_messages;
         this.messageMap = new HashMap<>();
 
         for (MessageKey key : MessageKey.values()) {
-            String msg = configuration.getString(key.getKey());
-            messageMap.put(key, (msg == null) ? "Invalid Message." : msg);
+            String msg = fileConfiguration.getString(key.getKey());
+            if (msg == null) {
+                PXItemTrigger.getInstance().saveResource("messages.yml", true);
+                DataManager.setup();
+                break;
+            }
+
+            messageMap.put(key, msg);
         }
     }
 

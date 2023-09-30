@@ -1,38 +1,62 @@
-#################################################################
-#                                                               #
-#         'messages.yml' is in the format of MiniMessage        #
-#  see detail: https://docs.advntr.dev/minimessage/format.html  #
-#                                                               #
-#################################################################
+# ┌────────────────────────────────────────────────────────────────────────────+
+# │
+# │  메시지는 'MiniMessage의 형식을 사용합니다.
+# │  자세한 정보: https://docs.advntr.dev/minimessage/format.html
+# │
+# └────────────────────────────────────────────────────────────────────────────+
 
-#     ┌ All Placeholders ┐
-# <trigger_name>: Name of Item Trigger
-# <type_name>: Type of Interaction that excutes the command of Item Trigger
-# <force>: Whether it is forced when executing the command of Item Trigger
-# <new_name>: New Name of Item Trigger
+#     ┌ Placeholders ┐
+# <trigger_name>: 아이템 트리거의 이름
+# <type_name>: 아이템 트리거가 실행 될 행위의 종류
+# <force>: 아이템 트리거 실행의 강제 여부
+# <new_name>: 아이템 트리거의 새 이름
 
 
-prefix: "<gold>[IT]</gold>"
-messages:
-  trigger_created: "새 아이템 트리거 '<yellow><trigger_name></yellow>' (을)를 생성했습니다."
-  trigger_removed: "아이템 트리거 '<yellow><trigger_name></yellow>' (을)를 제거했습니다."
-  received_item: "아이템 트리거 '<yellow><trigger_name></yellow>' 에 지정된 아이템을 가져왔습니다."
-  item_set: "아이템 트리거 '<yellow><trigger_name></yellow>' 의 아이템을 손에 든 아이템으로 지정했습니다."
-  force_set: "아이템 트리거 '<yellow><trigger_name></yellow>' 의 <type_name> 시 명령어의 강제 여부를 <force>로 설정했습니다."
-  command_set: "아이템 트리거 '<yellow><trigger_name></yellow>' 의 <type_name> 시의 명령어를 설정했습니다."
-  command_removed: "아이템 트리거 '<yellow><trigger_name></yellow>' 의 <type_name> 시의 명령어를 제거했습니다."
-  name_changed: "아이템 트리거 '<yellow><trigger_name></yellow>' 의 이름을 '<yellow><new_name></yellow>' 로 변경했습니다."
+normal:
+  # 접두사
+  prefix: "<gold>[IT]</gold>"
+  # 아이템 트리거 설정 리로드 시
   config_reloaded: "아이템 트리거 설정이 모두 새로고침 되었습니다."
-  error:
-    only_for_player: "이 명령어는 플레이어만 사용할 수 있습니다."
-    page_is_number: "페이지는 정수여야 합니다."
-    trigger_already_exist: "이미 존재하는 아이템 트리거입니다."
-    trigger_not_exist: "존재하지 않는 아이템 트리거입니다."
-    name_not_contains_special: "아이템 트리거의 이름에는 특수문자가 입력될 수 없습니다."
-    item_not_set: "해당 아이템 트리거에 아이템이 지정되지 않았습니다."
-    no_empty_space: "인벤토리에 공간이 부족합니다."
-    item_already_set: "해당 아이템은 이미 아이템 트리거에 지정되어 있습니다."
-    invalid_type: "올바르지 않은 타입입니다."
-    force_is_boolean: "강제 여부는 true 혹은 false 여야 합니다."
-    command_not_set: "해당 아이템 트리거에 해당 타입의 명령어가 등록되어 있지 않습니다."
-    name_already_registered: "이미 존재하는 아이템 트리거 이름입니다."
+main:
+  trigger_info: "아이템 트리거 '<yellow><trigger_name></yellow>' 의 정보 ┐"
+  # 아이템 트리거 생성 시
+  trigger_created: "새 아이템 트리거 '<yellow><trigger_name></yellow>' (을)를 생성했습니다."
+  # 아이템 트리거 제거 시
+  trigger_removed: "아이템 트리거 '<yellow><trigger_name></yellow>' (을)를 제거했습니다."
+  # 아이템 트리거에 지정된 아이템 지급 시
+  received_item: "아이템 트리거 '<yellow><trigger_name></yellow>' 에 지정된 아이템을 가져왔습니다."
+  # 아이템 트리거에 아이템 지정 시
+  item_set: "아이템 트리거 '<yellow><trigger_name></yellow>' 의 아이템을 손에 든 아이템으로 지정했습니다."
+  # 아이템 트리거의 실행 강제 여부 설정 시
+  force_set: "아이템 트리거 '<yellow><trigger_name></yellow>' 의 <type_name> 시 명령어의 강제 여부를 <force>로 설정했습니다."
+  # 아이템 트리거의 명령어 설정 시
+  command_set: "아이템 트리거 '<yellow><trigger_name></yellow>' 의 <type_name> 시의 명령어를 설정했습니다."
+  # 아이템 트리거의 명령어 제거 시
+  command_removed: "아이템 트리거 '<yellow><trigger_name></yellow>' 의 <type_name> 시의 명령어를 제거했습니다."
+  # 아이템 트리거 이름 변경 시
+  name_changed: "아이템 트리거 '<yellow><trigger_name></yellow>' 의 이름을 '<yellow><new_name></yellow>' 로 변경했습니다."
+error:
+  # 콘솔로 명령어 사용 시
+  only_for_player: "이 명령어는 플레이어만 사용할 수 있습니다."
+  # 도움말 페이지를 정수로 적지 않을 시
+  page_is_number: "페이지는 정수여야 합니다."
+  # 이미 존재하는 아이템 트리거 이름일 시
+  trigger_already_exist: "이미 존재하는 아이템 트리거입니다."
+  # 존재하지 않는 아이템 트리거 이름일 시
+  trigger_not_exist: "존재하지 않는 아이템 트리거입니다."
+  # 아이템 트리거 이름에 특수문자를 기입할 시
+  name_not_contains_special: "아이템 트리거의 이름에는 특수문자가 입력될 수 없습니다."
+  # 아이템 트리거에 지정된 아이템이 없을 시
+  item_not_set: "해당 아이템 트리거에 아이템이 지정되지 않았습니다."
+  # 인벤토리에 빈 공간이 없을 때
+  no_empty_space: "인벤토리에 공간이 부족합니다."
+  # 아이템이 이미 아이템 트리거에 설정되어 있을 시
+  item_already_set: "해당 아이템은 이미 아이템 트리거에 지정되어 있습니다."
+  # 올바르지 않는 명령어 실행 행위일 시
+  invalid_type: "올바르지 않은 타입입니다."
+  # 명령어 실행 강제 여부를 true 혹은 false로 적지 않을 시
+  force_is_boolean: "강제 여부는 true 혹은 false 여야 합니다."
+  # 아이템 트리거에 명령어가 등록이 되어 있지 않을 시
+  command_not_set: "해당 아이템 트리거에 해당 타입의 명령어가 등록되어 있지 않습니다."
+  # 이미 존재하는 아이템 트리거 이름으로 입력할 시
+  name_already_registered: "이미 존재하는 아이템 트리거 이름입니다."
