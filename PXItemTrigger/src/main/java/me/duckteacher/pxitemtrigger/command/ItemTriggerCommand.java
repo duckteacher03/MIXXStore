@@ -176,8 +176,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
         if (page < 1 || page > 2) page = 1;
 
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
-        player.sendPlainMessage("");
-        player.sendMessage(mm.deserialize(PREFIX + " 명령어 도움말 <st>━━━━━</st>[" + page + "/2]<st>━━━━━</st>"));
+        player.sendMessage(mm.deserialize("<br>" + PREFIX + " 명령어 도움말 <st>━━━━━</st>[" + page + "/2]<st>━━━━━</st>"));
 
         switch (page) {
             case 2 -> {
@@ -303,7 +302,7 @@ public class ItemTriggerCommand implements TabCompleter, CommandExecutor {
                         if (meta.hasDisplayName())
                             itemName = meta.displayName();
                         else
-                            itemName = mm.deserialize("<tr:" + item.getType().getItemTranslationKey() + ">");
+                            itemName = mm.deserialize("<tr:" + item.getType().translationKey() + ">");
                     }
                 }
 
